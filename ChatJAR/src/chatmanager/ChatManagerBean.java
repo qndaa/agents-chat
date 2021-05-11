@@ -15,6 +15,8 @@ import models.User;
 @Stateful
 @LocalBean
 public class ChatManagerBean implements ChatManagerRemote, ChatManagerLocal {
+	
+	private List<User> registrationUsers = new ArrayList<User>();
 
 	private List<User> users = new ArrayList<User>();
 	
@@ -27,7 +29,14 @@ public class ChatManagerBean implements ChatManagerRemote, ChatManagerLocal {
 	@Override
 	public boolean register(User user) {
 		// TODO Check if user with username already exists
-		users.add(user);
+		for (User u : registrationUsers) {
+			if (user.getUsername().equals(u.getUsername())) {
+				return false;
+			}
+			
+		}
+		registrationUsers.add(user);
+		System.out.print("User: " + user.toString() + "is registrated!");
 		return true;
 	}
 
