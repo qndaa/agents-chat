@@ -8,7 +8,8 @@ import agentmanager.AgentManagerBean;
 import agentmanager.AgentManagerRemote;
 import agents.Agent;
 import agents.UserAgent;
-import agents.ChatAgent;
+import chatmanager.ChatManagerBean;
+import chatmanager.ChatManagerRemote;
 import messagemanager.MessageManagerBean;
 import messagemanager.MessageManagerRemote;
 
@@ -21,8 +22,10 @@ public abstract class JNDILookup {
 			+ MessageManagerRemote.class.getName();
 	public static final String UserAgentLookup = JNDIPathChat + UserAgent.class.getSimpleName() + "!"
 			+ Agent.class.getName() + "?stateful";
-	public static final String ChatAgentLookup = JNDIPathChat + ChatAgent.class.getSimpleName() + "!"
-			+ Agent.class.getName() + "?stateful";
+	public static final String ChatManagerLookup = JNDIPathChat + ChatManagerBean.class.getSimpleName() + "!" +
+			ChatManagerRemote.class.getName();
+	//public static final String ChatAgentLookup = JNDIPathChat + ChatAgent.class.getSimpleName() + "!"
+	//		+ Agent.class.getName() + "?stateful";
 
 	public static <T> T lookUp(String name, Class<T> c) {
 		T bean = null;

@@ -3,7 +3,7 @@ import React from "react";
 class Forbidden extends React.Component {
 
     onClickButton = () => {
-        window.location.href = '/';
+        this.props.history.push('/');
     }
     render() {
         return (

@@ -9,10 +9,30 @@ class Home extends React.Component {
         event.preventDefault();
         console.log("Registration: username:" + this.state.username + " password: " + this.state.password);
 
-        const response = await user.post('/users/registration/' + localStorage.getItem('sessionId'),
+        await user.post('/users/registration/' + localStorage.getItem('sessionId'),
             {username : this.state.username, password: this.state.password});
 
-        console.log(response);
+        this.setState( { username: '' });
+        this.setState( { password: '' });
+    }
+
+    onLoginClick = async (event) => {
+        event.preventDefault();
+        console.log("Login: username:" + this.state.username + " password: " + this.state.password);
+
+
+        await user.post('/users/login/' + localStorage.getItem('sessionId'),
+           {username: this.state.username, password: this.state.password});
+
+        await this.sleep(300);
+        if (localStorage.getItem('isLogin') === 'TRUE') {
+            this.props.history.push('/chat');
+        }
+
+    }
+
+    sleep = (ms) => {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     onUsernameChange = (event) => {
@@ -21,6 +41,13 @@ class Home extends React.Component {
 
     onPasswordChange = (event) => {
         this.setState({ password: event.target.value });
+    }
+
+    componentDidMount() {
+
+        if (localStorage.getItem('isLogin') === 'TRUE') {
+            this.props.history.push('/chat')
+        }
     }
 
     render() {
@@ -38,7 +65,7 @@ class Home extends React.Component {
                             <input type="password" className="form-control" id="exampleInputPassword1" placeholder="Password" value={this.state.password} onChange={this.onPasswordChange}/>
                         </div>
                         <div className={`d-flex justify-content-center`}>
-                            <button type="submit" className={`btn btn-primary w-25 mr-3`}>Login</button>
+                            <button type="submit" className={`btn btn-primary w-25 mr-3`} onClick={this.onLoginClick}>Login</button>
                             <button type="submit" className={`btn btn-primary w-25 ml-3`} onClick={this.onRegistrationClick}>Registration</button>
                         </div>
                     </form>

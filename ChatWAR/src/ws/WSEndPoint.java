@@ -17,6 +17,8 @@ import agentmanager.AgentManagerBean;
 import agentmanager.AgentManagerRemote;
 import chatmanager.ChatManagerBean;
 import chatmanager.ChatManagerRemote;
+import models.User;
+import sun.util.logging.resources.logging;
 import util.JNDILookup;
 
 @Singleton
@@ -31,7 +33,7 @@ public class WSEndPoint {
 	}
 	
 	protected ChatManagerRemote chm() {
-		return JNDILookup.lookUp(JNDILookup.ChatAgentLookup, ChatManagerBean.class);
+		return (ChatManagerRemote) JNDILookup.lookUp(JNDILookup.ChatManagerLookup, ChatManagerBean.class);
 	}
 	
 	@OnOpen
@@ -41,12 +43,9 @@ public class WSEndPoint {
 		System.out.println("Number opened sesion: " + sessions.keySet().size() + 1);
 		
 		if(!sessions.keySet().contains(session)) {
-			
-			//sessions.get(session);
-			
-			
-			//agm().startAgent(session.getId(),  JNDILookup.UserAgentLookup);
-			//sessions.put(session, )
+					
+			agm().startAgent(session.getId(),  JNDILookup.UserAgentLookup);
+			sessions.put(session, null);
 			try {
 				session.getBasicRemote().sendText("sessionId:" + session.getId());
 			} catch (IOException e) {
@@ -57,17 +56,88 @@ public class WSEndPoint {
 	
 	@OnClose
 	public void close(Session session) {
-		// agm().stopAgent();
+		agm().stopAgent(session.getId());
 		System.out.println("Session with id: " + session.getId() + "closed!");
 		sessions.remove(session);
+		chm().logoutUser(sessions.get(session));
 	}
 	
 	@OnMessage
 	public void echoTextMessage(String msg) {
-		/*String msgReceiver = msg.split("RECEIVER:")[1].split("CONTENT:")[0];
-		String msgContent = msg.split("RECEIVER:")[1].split("CONTENT:")[1];
+		
+		String tokens [] = msg.split(" ");
+		String agentId = tokens[1].split(":")[1];
+				
+		if (tokens[0].equals("REGISTRATION")) {
+			Session session = sessions.keySet().stream().filter(s -> s.getId().equals(agentId)).findFirst().orElse(null);
+
+			if(session != null && session.isOpen()) {
+				try {
+					session.getBasicRemote().sendText("REGISTRATION " + tokens[2]);
+				} catch (IOException e) {
+					try {
+						session.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				}
+			}
+		} else if (tokens[0].equals("LOGIN")) {
+			Session session = sessions.keySet().stream().filter(s -> s.getId().equals(agentId)).findFirst().orElse(null);
+
+			if(session != null && session.isOpen()) {
+				try {
+					session.getBasicRemote().sendText("LOGIN " + tokens[2] + " " + tokens[3]);
+				} catch (IOException e) {
+					try {
+						session.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				}
+			}
+			
+		} else if (tokens[0].equals("LOGOUT")) {
+			Session session = sessions.keySet().stream().filter(s -> s.getId().equals(agentId)).findFirst().orElse(null);
+
+			if(session != null && session.isOpen()) {
+				try {
+					session.getBasicRemote().sendText("LOGOUT " + tokens[2]);
+				} catch (IOException e) {
+					try {
+						session.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				}
+			}
+			
+		} else if (tokens[0].equals("REGISTERED_USERS") || tokens[0].equals("LOGGED_USERS")) {
+			
+			Session session = sessions.keySet().stream().filter(s -> s.getId().equals(agentId)).findFirst().orElse(null);
+
+			if(session != null && session.isOpen()) {
+				try {
+					session.getBasicRemote().sendText(msg);
+				} catch (IOException e) {
+					try {
+						session.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				}
+			}
+			
+		}
 		
 		
+		
+		
+		/*
 		Session session = sessions
 				.stream()
 				.filter(s->s.getId().equals(msgReceiver))
@@ -90,9 +160,67 @@ public class WSEndPoint {
 	
 	@OnError
 	public void error(Session session, Throwable t) {
-		// agm().stopAgent();
-		//sessions.remove(session);
+		agm().stopAgent(session.getId());
+		sessions.remove(session);
 		t.printStackTrace();
+	}
+	
+
+	public void send(String agentId, String msg) {
+		Session session = sessions.keySet().stream().filter(s -> s.getId().equals(agentId)).findFirst().orElse(null);
+		if(session != null && session.isOpen()) {
+			try {
+				System.out.println("Send!");
+				session.getBasicRemote().sendText(msg);
+			} catch (IOException e) {
+				try {
+					session.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	public String getUserFromSession(String sessionId) {
+		Session session = sessions.keySet().stream().filter(s -> s.getId().equals(sessionId)).findFirst().orElse(null);
+		if (session != null)
+			return sessions.get(session);
+		else
+			return null;
+	}
+
+	public void putUserOnSession(User user, String sessionId) {
+		Session session = sessions.keySet().stream().filter(s -> s.getId().equals(sessionId)).findFirst().orElse(null);
+		if (session != null)
+			sessions.put(session, user.getUsername());
+		
+	}
+
+	public void removeUserFromSession(String sessionId) {
+		Session session = sessions.keySet().stream().filter(s -> s.getId().equals(sessionId)).findFirst().orElse(null);
+		if (session != null)
+			sessions.put(session, null);
+		
+	}
+
+	public void sendAllActiveUsers(String registeredUsersString) {
+		for(Session session : sessions.keySet())
+			if(sessions.get(session) != null && session.isOpen()) {
+				try {
+					session.getBasicRemote().sendText(registeredUsersString);
+				} catch (IOException e) {
+					try {
+						session.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					e.printStackTrace();
+				}
+			}
+		
 	}
 	
 }

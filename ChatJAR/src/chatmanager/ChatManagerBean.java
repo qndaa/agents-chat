@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.LocalBean;
+import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 
 import models.User;
@@ -12,43 +13,69 @@ import models.User;
 /**
  * Session Bean implementation class ChatBean
  */
-@Stateful
+@Singleton
 @LocalBean
-public class ChatManagerBean implements ChatManagerRemote, ChatManagerLocal {
+public class ChatManagerBean implements ChatManagerRemote {
 	
-	private List<User> registrationUsers = new ArrayList<User>();
+	private List<User> registredUsers = new ArrayList<User>();
 
-	private List<User> users = new ArrayList<User>();
+	private List<User> loggedInUsers = new ArrayList<User>();
 	
 	/**
 	 * Default constructor.
 	 */
 	public ChatManagerBean() {
+	
 	}
 
 	@Override
-	public boolean register(User user) {
+	public boolean registerRemote(User user) {
 		// TODO Check if user with username already exists
-		for (User u : registrationUsers) {
+		for (User u : registredUsers) {
 			if (user.getUsername().equals(u.getUsername())) {
+				System.out.println("Registration failed!");
 				return false;
 			}
 			
 		}
-		registrationUsers.add(user);
-		System.out.print("User: " + user.toString() + "is registrated!");
+		registredUsers.add(user);
+		System.out.println("User: " + user.toString() + "is registrated!");
 		return true;
 	}
 
 	@Override
-	public boolean login(String username, String password) {
-		boolean exists = users.stream().anyMatch(u->u.getUsername().equals(username) && u.getPassword().equals(password));
-		return exists;
+	public boolean login(User u) {
+		for (User user : registredUsers) {
+			if(user.getUsername().equals(u.getUsername()) && user.getPassword().equals(u.getPassword())) {
+				loggedInUsers.add(u);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
-	public List<User> loggedInUsers() {
-		return users;
+	public List<User> getLoggedInUsers() {
+		return loggedInUsers;
+	}
+
+	@Override
+	public boolean logoutUser(String username) {
+		// TODO Auto-generated method stub
+		for (User user : loggedInUsers) {
+			if (user.getUsername().equals(username)) {
+				loggedInUsers.remove(user);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+	@Override
+	public List<User> getRegistredUsers() {
+		// TODO Auto-generated method stub
+		return registredUsers;
 	}
 
 }

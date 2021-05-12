@@ -12,6 +12,7 @@ import javax.jms.Message;
 import javax.jms.TextMessage;
 
 import chatmanager.ChatManagerRemote;
+import messagemanager.AgentMessage;
 import models.User;
 import ws.WSEndPoint;
 /**
@@ -44,39 +45,100 @@ public class UserAgent implements Agent {
 	}
 	
 	@Override
-	public void handleMessage(Message msg) {
-		TextMessage tmsg = (TextMessage) msg;
-		String receiver;
-		String sender;
-		String option;
-		String response = "";
-		try {
-			receiver = (String) tmsg.getObjectProperty("receiver");
-			sender = (String) tmsg.getObjectProperty("sender");
-			
-			if (receiver.equals(agentId)) {
-				option = (String) tmsg.getObjectProperty("option");
-				sender = (String) tmsg.getObjectProperty("sender");
-				
-				switch (option) {
-				
-				case "GET_ALL_USERS":
-					List<User> users = chatManager.loggedInUsers();
-					// TODO If no users are logged in return some form of message
-					for (User user : users) {
-						response += user.toString() + "\n";
-					}
-					if(users.size() == 0)
-						response += "No users loggedIn";
-					
-					ws.echoTextMessage("RECEIVER:"+sender+"CONTENT:"+response);
+	public void handleMessage(AgentMessage msg) {
+		
+		System.out.println("Agent handled message: " + msg.getOperation());
+		
+		switch (msg.getOperation()) {
+		case "REGISTRATION":	
+			if(chatManager.registerRemote(new User(msg.getParam("username"), msg.getParam("password")))) {
+				System.out.print(true);
+				ws.echoTextMessage("REGISTRATION SENDER:" + agentId +  " REGISTRATION-SUCCESS");
+				ws.sendAllActiveUsers(getRegisteredUsersString());
+			} else {
+				System.out.print(false);
 
-					break;
-				}
+				ws.echoTextMessage("REGISTRATION SENDER:" + agentId  + " REGISTRATION-FAILED");
 			}
-		} catch (JMSException e) {
-			e.printStackTrace();
+			break;
+			
+			
+		case "LOGIN" :
+			User user = new User(msg.getParam("username"), msg.getParam("password"));
+			if (chatManager.login(user)) {
+				ws.putUserOnSession(user, agentId);
+				ws.echoTextMessage("LOGIN SENDER:" + agentId  + " LOGIN-SUCCESS " + user.getUsername());
+				ws.echoTextMessage(getRegisteredUsersString());
+				ws.sendAllActiveUsers(getLoggedInUsersString());
+			} else {
+				ws.echoTextMessage("LOGIN SENDER:" + agentId  + " LOGIN-FAILED " + user.getUsername());
+			}
+			break;
+			
+		case "LOGOUT":
+		
+			if(chatManager.logoutUser(msg.getParam("username"))){
+				ws.removeUserFromSession(agentId);
+				ws.echoTextMessage("LOGOUT SENDER:" + agentId  + " LOGOUT-SUCCESS");
+				ws.sendAllActiveUsers(getLoggedInUsersString());
+
+			} else {
+				ws.echoTextMessage("LOGOUT SENDER:" + agentId  + " LOGOUT-FAILED");
+			}
+			
+			break;
+			
+		case "LOGGED_USERS":
+			if (ws.getUserFromSession(agentId) != null) {
+				ws.echoTextMessage(getLoggedInUsersString());
+			}
+			
+			break;
+		case "REGISTERED_USERS":
+			
+			System.out.println("OVdje sam");
+
+			
+			if (ws.getUserFromSession(agentId) != null) {
+				ws.echoTextMessage(getRegisteredUsersString());
+			}
+			
+			break;
+		default:
+			System.out.print("Bad");
+			break;
 		}
+		
+	}
+	
+	
+	public String getRegisteredUsersString() {
+		List<User> users = chatManager.getRegistredUsers();
+		
+		
+		StringBuilder sb = new StringBuilder();
+		for (User u : users) {
+			sb.append(u.getUsername());
+			sb.append(",");
+		}
+		
+		
+		return "REGISTERED_USERS " + "SENDER:" + agentId + " " + sb.toString().substring(0, sb.length()-1);
+	}
+	
+	
+	public String getLoggedInUsersString() {
+
+		List<User> users = chatManager.getLoggedInUsers();
+			
+		StringBuilder sb = new StringBuilder();
+		for (User u : users) {
+			sb.append(u.getUsername());
+			sb.append(",");
+		}
+			
+			
+		return "LOGGED_USERS "  + "SENDER:" + agentId + " " +  sb.toString().substring(0, sb.length()-1);
 	}
 
 	@Override

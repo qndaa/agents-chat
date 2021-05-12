@@ -9,6 +9,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.Session;
 
 /**
@@ -52,19 +53,15 @@ public class MessageManagerBean implements MessageManagerRemote {
 		}
 	}
 	
-	private Message createTextMessage(AgentMessage amsg) {
-		Message msg = null ;
+	private Message createTextMessage(AgentMessage message) {
+		
+		ObjectMessage jmsMessage = null;
 		try {
-			msg = session.createTextMessage();
-			for(String property : amsg.userArgs.keySet()) {
-				msg.setObjectProperty(property, amsg.userArgs.get(property));
-			}
-			return msg;
+			jmsMessage = session.createObjectMessage(message);
 		} catch (JMSException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return msg;
+		return jmsMessage;
 		
 		
 	}

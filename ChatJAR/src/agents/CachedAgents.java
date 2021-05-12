@@ -34,4 +34,17 @@ public class CachedAgents implements CachedAgentsRemote{
 		runningAgents.put(key, agent);
 	}
 
+	@Override
+	public void stopAgent(String id) {
+		runningAgents.remove(id);
+	}
+
+	@Override
+	public Agent getAgent(String id) {
+		
+		return this.runningAgents.get(id);
+	}
+	
+	
+
 }
