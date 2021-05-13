@@ -23,4 +23,6 @@ public interface ChatManagerRemote {
 
 	public void addMessage(Message m);
 
+	public boolean isLogged(User user);
+
 }

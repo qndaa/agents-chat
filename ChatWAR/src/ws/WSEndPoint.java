@@ -11,6 +11,7 @@ import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
+import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import agentmanager.AgentManagerBean;
@@ -18,11 +19,10 @@ import agentmanager.AgentManagerRemote;
 import chatmanager.ChatManagerBean;
 import chatmanager.ChatManagerRemote;
 import models.User;
-import sun.util.logging.resources.logging;
 import util.JNDILookup;
 
 @Singleton
-@ServerEndpoint("/ws/{sessionId}")
+@ServerEndpoint("/ws/{username}")
 @LocalBean
 public class WSEndPoint {
 	
@@ -37,17 +37,22 @@ public class WSEndPoint {
 	}
 	
 	@OnOpen
-	public void onOpen(Session session) {
+	public void onOpen(Session session, @PathParam("username") String username) {
 
 		System.out.println("Sessia id: " + session.getId());
+		System.out.println("Username: " + username);
 		System.out.println("Number opened sesion: " + (sessions.keySet().size() + 1));
 		
 		if(!sessions.keySet().contains(session)) {
 					
 			agm().startAgent(session.getId(),  JNDILookup.UserAgentLookup);
-			sessions.put(session, null);
+			sessions.put(session, (username == "") ? null : username);
 			try {
 				session.getBasicRemote().sendText("sessionId:" + session.getId());
+				//if (sessions.get(session) != null) {
+				//	session.getBasicRemote().sendText("REDIRECT");
+				//}
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -57,7 +62,6 @@ public class WSEndPoint {
 	@OnClose
 	public void close(Session session) {
 		agm().stopAgent(session.getId());
-		chm().logoutUser(sessions.get(session));
 		System.out.println("Session with id: " + session.getId() + "closed!");
 		sessions.remove(session);
 		

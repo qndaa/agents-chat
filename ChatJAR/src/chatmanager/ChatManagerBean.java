@@ -48,6 +48,11 @@ public class ChatManagerBean implements ChatManagerRemote {
 
 	@Override
 	public boolean login(User u) {
+		
+		if (isLogged(u)) {
+			return true;
+		}
+		
 		for (User user : registredUsers) {
 			if(user.getUsername().equals(u.getUsername()) && user.getPassword().equals(u.getPassword())) {
 				loggedInUsers.add(u);
@@ -95,6 +100,17 @@ public class ChatManagerBean implements ChatManagerRemote {
 		// TODO Auto-generated method stub
 		allMessages.add(m);
 		
+	}
+
+	@Override
+	public boolean isLogged(User user) {
+		for (User u : loggedInUsers) {
+			if (u.getUsername().equals(user.getUsername())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 	
 	

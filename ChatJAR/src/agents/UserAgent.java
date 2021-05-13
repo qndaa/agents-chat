@@ -66,6 +66,7 @@ public class UserAgent implements Agent {
 			
 		case "LOGIN" :
 			User user = new User(msg.getParam("username"), msg.getParam("password"));
+			
 			if (chatManager.login(user)) {
 				ws.putUserOnSession(user, agentId);
 				ws.echoTextMessage("LOGIN SENDER:" + agentId  + " LOGIN-SUCCESS " + user.getUsername());

@@ -15,18 +15,16 @@ class Main extends React.Component {
     }
 
     componentDidMount = () => {
+        let sessionId;
+        let username;
+        let numOfSessions;
 
+        localStorage.getItem('sessionId') == null ? sessionId = '' : sessionId = localStorage.getItem('sessionId');
+        localStorage.getItem('username') == null ? username = '' : username = localStorage.getItem('username');
+        localStorage.getItem('numOfSessions') == null ? numOfSessions = 0 : numOfSessions = localStorage.getItem('numOfSessions');
 
-    let sessionId;
-
-        if (localStorage.getItem('sessionId') == null) {
-            sessionId = '';
-        } else {
-            sessionId = localStorage.getItem('sessionId');
-        }
-        const url = "ws://localhost:8080/ChatWAR/ws/" + sessionId;
+        const url = "ws://localhost:8080/ChatWAR/ws/" + username;
         let socket;
-
 
         try{
             socket = new WebSocket(url);
@@ -34,11 +32,11 @@ class Main extends React.Component {
 
             socket.onopen = function(){
                 console.log('onopen: Socket Status: '+socket.readyState+' (open)');
-                localStorage.setItem('isLogin', 'FALSE');
+                localStorage.setItem('numOfSessions', (localStorage.getItem(numOfSessions) + 1))
+                //localStorage.setItem('isLogin', 'FALSE');
             }
 
             socket.onmessage = (msg) => {
-
                 console.log(msg.data);
 
                 if (msg.data.startsWith("REGISTRATION")){
@@ -88,6 +86,8 @@ class Main extends React.Component {
                         this.setState({messages: mess});
                     }
 
+                } else if (msg.data.startsWith('REDIRECT')) {
+                    //this.state.history.push('/chat');
                 }
 
 
@@ -100,9 +100,15 @@ class Main extends React.Component {
             }
             socket.onclose = function(){
                 socket = null;
-                localStorage.removeItem('sessionId');
-                localStorage.removeItem('username');
-                localStorage.setItem('isLogin', 'FALSE');
+                if (localStorage.getItem('numOfSession') === 1) {
+                    localStorage.removeItem('sessionId');
+                    localStorage.removeItem('numOfSession');
+                } else {
+                    
+                }
+
+                //localStorage.removeItem('username');
+                //localStorage.setItem('isLogin', 'FALSE');
             }
 
         } catch(exception){

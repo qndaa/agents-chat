@@ -91,7 +91,6 @@ public class ChatBeanRest implements ChatRest {
 	@Override
 	public void sendAllUsersMessage(String sender, String subject, String content) {
 		// TODO Auto-generated method stub
-		System.out.println("DJole");
 		AgentMessage msg = new AgentMessage("MESSAGE_ALL", sender);
 		msg.addParam("subject", subject);
 		msg.addParam("content", content);
@@ -102,7 +101,6 @@ public class ChatBeanRest implements ChatRest {
 	@Override
 	public void sendUserMessage(String sender, String reciver, String subject, String content) {
 		// TODO Auto-generated method stub
-		System.out.println("Djolde222");
 		AgentMessage msg = new AgentMessage("MESSAGE", sender);
 		msg.addParam("reciver", reciver);
 		msg.addParam("subject", subject);
