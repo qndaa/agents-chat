@@ -7,6 +7,7 @@ import javax.ejb.LocalBean;
 import javax.ejb.Singleton;
 import javax.ejb.Stateful;
 
+import models.Message;
 import models.User;
 
 // TODO Implement the rest of Client-Server functionalities 
@@ -20,6 +21,8 @@ public class ChatManagerBean implements ChatManagerRemote {
 	private List<User> registredUsers = new ArrayList<User>();
 
 	private List<User> loggedInUsers = new ArrayList<User>();
+	
+	private List<Message> allMessages = new ArrayList<Message>();
 	
 	/**
 	 * Default constructor.
@@ -77,5 +80,23 @@ public class ChatManagerBean implements ChatManagerRemote {
 		// TODO Auto-generated method stub
 		return registredUsers;
 	}
+
+	@Override
+	public List<Message> getAllMessage(String username) {
+		List<Message> userMessages = new ArrayList<Message>();
+		for(Message m : allMessages)
+			if (m.getSender().equals(username) || m.getReceiver().equals(username))
+				userMessages.add(m);
+		return userMessages;
+	}
+
+	@Override
+	public void addMessage(Message m) {
+		// TODO Auto-generated method stub
+		allMessages.add(m);
+		
+	}
+	
+	
 
 }

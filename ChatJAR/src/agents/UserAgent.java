@@ -1,5 +1,6 @@
 package agents;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 
@@ -104,6 +105,47 @@ public class UserAgent implements Agent {
 			}
 			
 			break;
+			
+		case "MESSAGE_ALL":
+			List<User> loggedInUsers = chatManager.getLoggedInUsers();
+			System.out.print("Broj ulogovanih:" + loggedInUsers.size());
+			for (User u : loggedInUsers) {
+				addMessage(u, msg.getParam("subject"), msg.getParam("content"));
+				
+				if(ws.getSessionFromUsername(u.getUsername()) != null) {
+					ws.sendMessages(ws.getSessionFromUsername(u.getUsername()), getAllMessageString(u.getUsername()));
+				}
+			}
+			
+			break;
+	
+		case "MESSAGE":
+			
+			models.Message m = new models.Message(ws.getUserFromSession(agentId), 
+					msg.getParam("reciver"), 
+					LocalDateTime.now(), msg.getParam("subject"), msg.getParam("content"));
+			chatManager.addMessage(m);
+			
+			if (ws.getSessionFromUsername(msg.getParam("reciver")) != null) {
+				ws.sendMessages(ws.getSessionFromUsername(msg.getParam("reciver")), getAllMessageString(msg.getParam("reciver")));	
+			}
+			
+			if(ws.getUserFromSession(agentId) != null) {
+				ws.sendMessages(agentId, getAllMessageString(ws.getUserFromSession(agentId)));
+			}
+			
+			break;
+			
+		case "GET_MESSAGES":
+			if(ws.getUserFromSession(agentId) != null) {
+				ws.sendMessages(agentId, getAllMessageString(ws.getUserFromSession(agentId)));
+			}
+			
+			
+			
+			break;
+			
+
 		default:
 			System.out.print("Bad");
 			break;
@@ -112,6 +154,40 @@ public class UserAgent implements Agent {
 	}
 	
 	
+	private String getAllMessageString(String username) {
+		List<models.Message> messages = chatManager.getAllMessage(username);
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("MESSAGES&");
+		
+		System.out.println(messages.size());
+		
+		for (models.Message message : messages) {
+			sb.append(message.getSender() + ";");
+			sb.append(message.getReceiver() + ";");
+			sb.append(message.getSubject() + ";");
+			sb.append(message.getTime() + ";");
+			sb.append(message.getContent() + "&");
+
+		}
+		
+		
+		return sb.toString().substring(0, sb.length()-1);
+
+	}
+
+	private void addMessage(User u, String subject, String content) {
+		// TODO Auto-generated method stub
+		String username = ws.getUserFromSession(agentId);
+		System.out.print(username);
+		if (username != null) {
+			models.Message m = new models.Message(username, u.getUsername(), LocalDateTime.now(), subject, content); 
+			chatManager.addMessage(m);
+			
+		}
+		
+	}
+
 	public String getRegisteredUsersString() {
 		List<User> users = chatManager.getRegistredUsers();
 		

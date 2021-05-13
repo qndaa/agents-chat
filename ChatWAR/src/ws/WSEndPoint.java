@@ -40,7 +40,7 @@ public class WSEndPoint {
 	public void onOpen(Session session) {
 
 		System.out.println("Sessia id: " + session.getId());
-		System.out.println("Number opened sesion: " + sessions.keySet().size() + 1);
+		System.out.println("Number opened sesion: " + (sessions.keySet().size() + 1));
 		
 		if(!sessions.keySet().contains(session)) {
 					
@@ -57,9 +57,10 @@ public class WSEndPoint {
 	@OnClose
 	public void close(Session session) {
 		agm().stopAgent(session.getId());
+		chm().logoutUser(sessions.get(session));
 		System.out.println("Session with id: " + session.getId() + "closed!");
 		sessions.remove(session);
-		chm().logoutUser(sessions.get(session));
+		
 	}
 	
 	@OnMessage
@@ -221,6 +222,33 @@ public class WSEndPoint {
 				}
 			}
 		
+	}
+
+	public void sendMessages(String agentId, String allMessageString) {
+		Session session = sessions.keySet().stream().filter(s -> s.getId().equals(agentId)).findFirst().orElse(null);
+		if(session != null && session.isOpen()) {
+			try {
+				System.out.println("Send!");
+				session.getBasicRemote().sendText(allMessageString);
+			} catch (IOException e) {
+				try {
+					session.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	public String getSessionFromUsername(String username) {
+		for(Session session: sessions.keySet()) {
+			if (sessions.get(session).equals(username)) {
+				return session.getId();
+			}
+		}
+		return null;
 	}
 	
 }

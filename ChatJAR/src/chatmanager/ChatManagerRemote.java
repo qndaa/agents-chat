@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
+import models.Message;
 import models.User;
 
 @Remote
@@ -17,4 +18,9 @@ public interface ChatManagerRemote {
 	public boolean logoutUser(String username);
 	
 	public List<User> getRegistredUsers();
+	
+	public List<Message> getAllMessage(String username);
+
+	public void addMessage(Message m);
+
 }

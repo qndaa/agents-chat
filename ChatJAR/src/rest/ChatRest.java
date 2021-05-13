@@ -43,23 +43,23 @@ public interface ChatRest {
 	
 	
 	@POST
-	@Path("/messages/all/{id}")
+	@Path("/messages/all/{sender}/{subject}/{content}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public void sendAllUsersMessage(@PathParam("id") String id);
+	public void sendAllUsersMessage(@PathParam("sender") String sender, @PathParam("subject") String subject, @PathParam("content") String content);
 	
 	
 	@POST
-	@Path("/messages/user/{id}")
+	@Path("/messages/user/{sender}/{reciver}/{subject}/{content}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public void sendUserMessage(@PathParam("id") String id);
+	public void sendUserMessage(@PathParam("sender") String sender, @PathParam("reciver") String reciver, @PathParam("subject") String subject, @PathParam("content") String content);
 	
 	@GET
-	@Path("/messages/{id}")
+	@Path("/messages/{sender}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	public void getMessagesForUser(@PathParam("id") String id);
+	public void getMessagesForUser(@PathParam("sender") String sender);
 	
 	
 	@DELETE

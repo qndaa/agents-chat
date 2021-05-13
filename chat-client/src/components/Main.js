@@ -11,7 +11,7 @@ class Main extends React.Component {
     constructor(props) {
         super(props);
 
-        this.state = {registeredUsers: null, loggedInUsers: null}
+        this.state = {registeredUsers: null, loggedInUsers: null, messages: null, messageContent: '', selectedOption: 'ALL'}
     }
 
     componentDidMount = () => {
@@ -71,6 +71,23 @@ class Main extends React.Component {
 
                     this.setState({loggedInUsers: tokens[2].split(',')});
 
+                } else if (msg.data.startsWith('MESSAGES')) {
+                    const tokens = msg.data.split('&');
+                    if (tokens.length === 0) {
+                        this.setState({'messages' : []});
+                    } else {
+                        const mess = [];
+                        for(let item of tokens) {
+                            const parts = item.split(';');
+                            if(parts.length === 5) {
+                              mess.push({sender: parts[0], receiver: parts[1], subject: parts[2], time: parts[3], content: parts[4]});
+                            }
+                        }
+                        console.log(mess);
+
+                        this.setState({messages: mess});
+                    }
+
                 }
 
 
@@ -103,7 +120,16 @@ class Main extends React.Component {
                     <div>
                         <Route path={`/`} exact={true} component={Home}/>
                         <Route path={`/home`} exact={true} component={Home}/>
-                        <Route path={`/chat`} exact={true} component={(props) => <Chat {...props} registeredUsers={this.state.registeredUsers} loggedInUsers={this.state.loggedInUsers} />} />
+                        <Route path={`/chat`} exact={true} component={(props) =>
+                            <Chat {...props}
+                                  registeredUsers={this.state.registeredUsers}
+                                  loggedInUsers={this.state.loggedInUsers}
+                                  messages={this.state.messages}
+
+                            />}
+
+
+                        />
                         <Route path={'/forbidden'} exaxt={true} component={Forbidden} />
                     </div>
                 </BrowserRouter>
