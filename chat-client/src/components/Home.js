@@ -7,6 +7,10 @@ class Home extends React.Component {
 
     onRegistrationClick = async (event) => {
         event.preventDefault();
+        if (this.state.username.trim() === '' || this.state.password.trim() === '') {
+            alert("Invalid inputs!");
+            return;
+        }
         console.log("Registration: username:" + this.state.username + " password: " + this.state.password);
 
         await user.post('/users/registration/' + localStorage.getItem('sessionId'),
@@ -18,6 +22,10 @@ class Home extends React.Component {
 
     onLoginClick = async (event) => {
         event.preventDefault();
+        if (this.state.username.trim() === '' || this.state.password.trim() === '') {
+            alert("Invalid inputs!");
+            return;
+        }
         console.log("Login: username:" + this.state.username + " password: " + this.state.password);
 
 
@@ -25,7 +33,7 @@ class Home extends React.Component {
            {username: this.state.username, password: this.state.password});
 
         await this.sleep(300);
-        if (localStorage.getItem('isLogin') === 'TRUE') {
+        if (localStorage.getItem('username') !== '') {
             this.props.history.push('/chat');
         }
 
@@ -45,9 +53,9 @@ class Home extends React.Component {
 
     componentDidMount() {
 
-        if (localStorage.getItem('isLogin') === 'TRUE') {
-            this.props.history.push('/chat')
-        }
+        //if (localStorage.getItem('username') !== '') {
+        //    this.props.history.push('/chat')
+        //}
     }
 
     render() {

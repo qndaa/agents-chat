@@ -46,12 +46,17 @@ public class WSEndPoint {
 		if(!sessions.keySet().contains(session)) {
 					
 			agm().startAgent(session.getId(),  JNDILookup.UserAgentLookup);
-			sessions.put(session, (username == "") ? null : username);
+			if (username.equals("")) {
+				sessions.put(session, null);
+			} else {
+				sessions.put(session, username);
+			}
+			//sessions.put(session, (username == "") ? null : username);
 			try {
 				session.getBasicRemote().sendText("sessionId:" + session.getId());
-				//if (sessions.get(session) != null) {
-				//	session.getBasicRemote().sendText("REDIRECT");
-				//}
+				if (sessions.get(session) != null) {
+					session.getBasicRemote().sendText("REDIRECT");
+				}
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -208,6 +213,7 @@ public class WSEndPoint {
 		Session session = sessions.keySet().stream().filter(s -> s.getId().equals(sessionId)).findFirst().orElse(null);
 		if (session != null)
 			sessions.put(session, null);
+		
 		
 	}
 

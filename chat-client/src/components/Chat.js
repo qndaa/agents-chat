@@ -7,7 +7,7 @@ class Chat extends React.Component {
         super(props);
         this.state = {messageContent: '', selectedOption: 'ALL', messageSubject: ''};
 
-        if (localStorage.getItem('isLogin') === 'FALSE') {
+        if (localStorage.getItem('username') === '') {
             this.props.history.push('/forbidden')
         }
     }
@@ -31,9 +31,9 @@ class Chat extends React.Component {
     logout = async () => {
         await user.delete('/users/loggedIn/' + localStorage.getItem('sessionId') + '/' + localStorage.getItem('username'));
         localStorage.setItem('isLogin', 'FALSE');
-        localStorage.removeItem('username');
+        localStorage.setItem('username', '');
 
-        await this.sleep(300);
+        //await this.sleep(100);
         this.props.history.push('/home');
     }
 

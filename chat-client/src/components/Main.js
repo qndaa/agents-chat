@@ -58,6 +58,7 @@ class Main extends React.Component {
                     const tokens = msg.data.split(' ');
                     if (tokens[1] === 'LOGOUT-SUCCESS') {
                         //this.props.history.push('/home');
+                        localStorage.setItem('username', '');
                     }
                 } else if (msg.data.startsWith('REGISTERED_USERS')) {
                     const tokens = msg.data.split(' ');
@@ -92,6 +93,8 @@ class Main extends React.Component {
 
 
                 else {
+
+
                     console.log('onmessage: Received: '+ msg.data);
                     sessionId = msg.data.split(":")[1];
                     localStorage.setItem('sessionId', sessionId);
@@ -104,10 +107,10 @@ class Main extends React.Component {
                     localStorage.removeItem('sessionId');
                     localStorage.removeItem('numOfSession');
                 } else {
-                    
+
                 }
 
-                //localStorage.removeItem('username');
+                localStorage.setItem('username', '');
                 //localStorage.setItem('isLogin', 'FALSE');
             }
 

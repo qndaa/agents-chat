@@ -80,7 +80,7 @@ public class UserAgent implements Agent {
 		case "LOGOUT":
 		
 			if(chatManager.logoutUser(msg.getParam("username"))){
-				ws.removeUserFromSession(agentId);
+				ws.removeUserFromSession(msg.getParam("username"));
 				ws.echoTextMessage("LOGOUT SENDER:" + agentId  + " LOGOUT-SUCCESS");
 				ws.sendAllActiveUsers(getLoggedInUsersString());
 
@@ -213,9 +213,15 @@ public class UserAgent implements Agent {
 			sb.append(u.getUsername());
 			sb.append(",");
 		}
-			
-			
-		return "LOGGED_USERS "  + "SENDER:" + agentId + " " +  sb.toString().substring(0, sb.length()-1);
+		
+		if (sb.length() > 0) {
+			return "LOGGED_USERS "  + "SENDER:" + agentId + " " +  sb.toString().substring(0, sb.length()-1);
+
+		} else {
+			return "LOGGED_USERS "  + "SENDER:" + agentId + " ";
+
+		}
+
 	}
 
 	@Override
